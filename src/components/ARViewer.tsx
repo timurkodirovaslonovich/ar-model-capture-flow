@@ -1,70 +1,16 @@
 
-import React, { useRef, useState, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import * as THREE from 'three';
+import { CSS3DBox } from './CSS3DBox';
+import { CSS3DSphere } from './CSS3DSphere';
+import { CSS3DCylinder } from './CSS3DCylinder';
 
 interface ARViewerProps {
   capturedImage: string;
   onNewPhoto: () => void;
 }
-
-// 3D Box Component
-const AnimatedBox = ({ scale, rotation }: { scale: number; rotation: number }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += delta * 0.5;
-      meshRef.current.rotation.y += delta * 0.2;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, 0]} scale={scale} rotation={[0, rotation * Math.PI / 180, 0]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#4F46E5" />
-    </mesh>
-  );
-};
-
-// 3D Sphere Component
-const AnimatedSphere = ({ scale }: { scale: number }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.5;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[2, 0, 0]} scale={scale * 0.8}>
-      <sphereGeometry args={[0.5, 32, 32]} />
-      <meshStandardMaterial color="#EC4899" />
-    </mesh>
-  );
-};
-
-// 3D Cylinder Component
-const AnimatedCylinder = ({ scale }: { scale: number }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += delta;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[-2, 0, 0]} scale={scale * 0.6}>
-      <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-      <meshStandardMaterial color="#10B981" />
-    </mesh>
-  );
-};
 
 export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto }) => {
   const [modelScale, setModelScale] = useState(1);
@@ -93,17 +39,11 @@ export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto })
             className="w-full h-full object-cover"
           />
           
-          {/* 3D AR Scene Overlay */}
-          <div className="absolute inset-0">
-            <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} />
-              <Suspense fallback={null}>
-                <AnimatedBox scale={modelScale} rotation={modelRotation} />
-                <AnimatedSphere scale={modelScale} />
-                <AnimatedCylinder scale={modelScale} />
-              </Suspense>
-            </Canvas>
+          {/* CSS 3D AR Scene Overlay */}
+          <div className="absolute inset-0 perspective-1000" style={{ perspective: '1000px' }}>
+            <CSS3DBox scale={modelScale} rotation={modelRotation} />
+            <CSS3DSphere scale={modelScale} />
+            <CSS3DCylinder scale={modelScale} />
           </div>
           
           {/* AR Controls Overlay */}
@@ -154,6 +94,27 @@ export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto })
           </div>
         </div>
       </Card>
+      
+      <style jsx>{`
+        @keyframes rotate3d {
+          0% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(0deg) rotateY(var(--rotation)) rotateZ(0deg); }
+          100% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(360deg) rotateY(calc(var(--rotation) + 360deg)) rotateZ(360deg); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translate(-50%, -50%) scale(var(--scale)) translateY(0px); }
+          50% { transform: translate(-50%, -50%) scale(var(--scale)) translateY(-20px); }
+        }
+        
+        @keyframes spin {
+          0% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(0deg); }
+          100% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(360deg); }
+        }
+        
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+      `}</style>
     </div>
   );
 };

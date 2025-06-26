@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,36 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* CSS 3D Animations */
+@keyframes rotate3d {
+  0% { 
+    transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) rotateZ(0deg); 
+  }
+  100% { 
+    transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg) rotateZ(360deg); 
+  }
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translate(-50%, -50%) translateY(0px); 
+  }
+  50% { 
+    transform: translate(-50%, -50%) translateY(-20px); 
+  }
+}
+
+@keyframes spin {
+  0% { 
+    transform: translate(-50%, -50%) rotateX(0deg); 
+  }
+  100% { 
+    transform: translate(-50%, -50%) rotateX(360deg); 
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
 }
