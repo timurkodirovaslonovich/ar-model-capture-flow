@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import * as THREE from 'three';
 
 interface ARViewerProps {
   capturedImage: string;
