@@ -1,5 +1,6 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, Suspense } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,26 +10,64 @@ interface ARViewerProps {
   onNewPhoto: () => void;
 }
 
+// 3D Box Component
+const AnimatedBox = ({ scale, rotation }: { scale: number; rotation: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x += delta * 0.5;
+      meshRef.current.rotation.y += delta * 0.2;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0]} scale={scale} rotation={[0, rotation * Math.PI / 180, 0]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#4F46E5" />
+    </mesh>
+  );
+};
+
+// 3D Sphere Component
+const AnimatedSphere = ({ scale }: { scale: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.5;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[2, 0, 0]} scale={scale * 0.8}>
+      <sphereGeometry args={[0.5, 32, 32]} />
+      <meshStandardMaterial color="#EC4899" />
+    </mesh>
+  );
+};
+
+// 3D Cylinder Component
+const AnimatedCylinder = ({ scale }: { scale: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x += delta;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[-2, 0, 0]} scale={scale * 0.6}>
+      <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
+      <meshStandardMaterial color="#10B981" />
+    </mesh>
+  );
+};
+
 export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto }) => {
-  const sceneRef = useRef<HTMLElement>(null);
   const [modelScale, setModelScale] = useState(1);
   const [modelRotation, setModelRotation] = useState(0);
-
-  useEffect(() => {
-    // Load A-Frame scripts dynamically
-    const loadAFrame = () => {
-      if (!(window as any).AFRAME) {
-        const script = document.createElement('script');
-        script.src = 'https://aframe.io/releases/1.4.0/aframe.min.js';
-        script.onload = () => {
-          console.log('A-Frame loaded successfully');
-        };
-        document.head.appendChild(script);
-      }
-    };
-
-    loadAFrame();
-  }, []);
 
   const handleScaleUp = () => {
     setModelScale(prev => Math.min(prev + 0.2, 3));
@@ -53,57 +92,17 @@ export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto })
             className="w-full h-full object-cover"
           />
           
-          {/* A-Frame AR Scene Overlay */}
+          {/* 3D AR Scene Overlay */}
           <div className="absolute inset-0">
-            <a-scene
-              ref={sceneRef}
-              embedded
-              style={{ 
-                width: '100%', 
-                height: '100%',
-                background: 'transparent'
-              }}
-              vr-mode-ui="enabled: false"
-              device-orientation-permission-ui="enabled: false"
-            >
-              <a-camera 
-                position="0 0 3" 
-                look-controls="enabled: false"
-                wasd-controls="enabled: false"
-              />
-              
-              {/* 3D AR Model */}
-              <a-box
-                position="0 0 0"
-                rotation={`0 ${modelRotation} 0`}
-                scale={`${modelScale} ${modelScale} ${modelScale}`}
-                color="#4F46E5"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000"
-                shadow="cast: true"
-              />
-              
-              {/* Alternative models - can be switched */}
-              <a-sphere
-                position="2 0 0"
-                radius="0.5"
-                scale={`${modelScale * 0.8} ${modelScale * 0.8} ${modelScale * 0.8}`}
-                color="#EC4899"
-                animation="property: position; to: 2 1 0; dir: alternate; dur: 2000; loop: true"
-              />
-              
-              <a-cylinder
-                position="-2 0 0"
-                radius="0.5"
-                height="1"
-                scale={`${modelScale * 0.6} ${modelScale * 0.6} ${modelScale * 0.6}`}
-                color="#10B981"
-                animation="property: rotation; to: 360 0 0; loop: true; dur: 3000"
-              />
-              
-              {/* Lighting */}
-              <a-light type="ambient" color="#404040" />
-              <a-light type="point" position="2 4 4" />
-            </a-scene>
+            <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+              <ambientLight intensity={0.5} />
+              <pointLight position={[10, 10, 10]} />
+              <Suspense fallback={null}>
+                <AnimatedBox scale={modelScale} rotation={modelRotation} />
+                <AnimatedSphere scale={modelScale} />
+                <AnimatedCylinder scale={modelScale} />
+              </Suspense>
+            </Canvas>
           </div>
           
           {/* AR Controls Overlay */}
