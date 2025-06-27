@@ -40,7 +40,7 @@ export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto })
           />
           
           {/* CSS 3D AR Scene Overlay */}
-          <div className="absolute inset-0 perspective-1000" style={{ perspective: '1000px' }}>
+          <div className="absolute inset-0 perspective-1000">
             <CSS3DBox scale={modelScale} rotation={modelRotation} />
             <CSS3DSphere scale={modelScale} />
             <CSS3DCylinder scale={modelScale} />
