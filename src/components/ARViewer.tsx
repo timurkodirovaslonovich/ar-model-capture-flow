@@ -94,27 +94,6 @@ export const ARViewer: React.FC<ARViewerProps> = ({ capturedImage, onNewPhoto })
           </div>
         </div>
       </Card>
-      
-      <style jsx>{`
-        @keyframes rotate3d {
-          0% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(0deg) rotateY(var(--rotation)) rotateZ(0deg); }
-          100% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(360deg) rotateY(calc(var(--rotation) + 360deg)) rotateZ(360deg); }
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translate(-50%, -50%) scale(var(--scale)) translateY(0px); }
-          50% { transform: translate(-50%, -50%) scale(var(--scale)) translateY(-20px); }
-        }
-        
-        @keyframes spin {
-          0% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(0deg); }
-          100% { transform: translate(-50%, -50%) scale(var(--scale)) rotateX(360deg); }
-        }
-        
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-      `}</style>
     </div>
   );
 };
